@@ -4,10 +4,10 @@
   "description": "A BLE module for react native.",
   "repository": {
     "type": "git",
-    "url": "https://github.com/innoveit/react-native-ble-manager.git"
+    "url": "https://github.com/PiJaAB/react-native-ble-manager.git"
   },
   "bugs": {
-    "url": "https://github.com/innoveit/react-native-ble-manager/issues"
+    "url": "https://github.com/PiJaAB/react-native-ble-manager/issues"
   },
   "keywords": [
     "react-native",
@@ -19,8 +19,8 @@
   ],
   "license": "Apache-2.0",
   "author": {
-    "name": "Innove",
-    "url": "https://github.com/innoveit"
+    "name": "PiJaAB",
+    "url": "https://github.com/PiJaAB"
   },
   "main": "dist/cjs/index.js",
   "types": "dist/esm/index.d.ts",

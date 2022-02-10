@@ -183,31 +183,32 @@ export enum ConnectionPriority {
   low = 2,
 }
 
-export interface Service {
-  uuid: string;
-}
+export type Service = string | { uuid: string };
 
 export interface Descriptor {
   value: string;
   uuid: string;
 }
 
+export type Properties =
+  | 'Broadcast'
+  | 'Read'
+  | 'WriteWithoutResponse'
+  | 'Write'
+  | 'Notify'
+  | 'Indicate'
+  | 'AuthenticatedSignedWrites'
+  | 'ExtendedProperties'
+  | 'NotifyEncryptionRequired'
+  | 'IndicateEncryptionRequired';
+
 export interface Characteristic {
-  /**
-   * See https://developer.apple.com/documentation/corebluetooth/cbcharacteristicproperties
-   */
-  properties: {
-    Broadcast?: "Broadcast";
-    Read?: "Read";
-    WriteWithoutResponse?: "WriteWithoutResponse";
-    Write?: "Write";
-    Notify?: "Notify";
-    Indicate?: "Indicate";
-    AuthenticatedSignedWrites?: "AuthenticatedSignedWrites";
-    ExtendedProperties?: "ExtendedProperties";
-    NotifyEncryptionRequired?: "NotifyEncryptionRequired";
-    IndicateEncryptionRequired?: "IndicateEncryptionRequired";
-  };
+  // See https://developer.apple.com/documentation/corebluetooth/cbcharacteristicproperties
+  properties:
+    | {
+        [key in Properties]: key;
+      }
+    | Properties[];
   characteristic: string;
   service: string;
   descriptors?: Descriptor[];
@@ -219,117 +220,45 @@ export interface PeripheralInfo extends Peripheral {
   services?: Service[];
 }
 
-export enum BleEventType {
-  BleManagerDidUpdateState = "BleManagerDidUpdateState",
-  BleManagerStopScan = "BleManagerStopScan",
-  BleManagerDiscoverPeripheral = "BleManagerDiscoverPeripheral",
-  BleManagerDidUpdateValueForCharacteristic = "BleManagerDidUpdateValueForCharacteristic",
-  BleManagerConnectPeripheral = "BleManagerConnectPeripheral",
-  BleManagerDisconnectPeripheral = "BleManagerDisconnectPeripheral",
+export interface UpdateStateInfo {
   /**
-   * [Android only]
+   * the new BLE state
    */
-  BleManagerPeripheralDidBond = "BleManagerPeripheralDidBond",
+  state: 'on' | 'off';
+}
+export interface CharacteristicValueUpdate {
   /**
-   * [iOS only]
+   * the read value
    */
-  BleManagerCentralManagerWillRestoreState = "BleManagerCentralManagerWillRestoreState",
+  value: number[];
   /**
-   * [iOS only]
+   * the id of the peripheral
    */
-  BleManagerDidUpdateNotificationStateFor = "BleManagerDidUpdateNotificationStateFor",
+  peripheral: string;
+  /**
+   * the UUID of the characteristic
+   */
+  characteristic: string;
+  /**
+   *  the UUID of the characteristic
+   */
+  service: string;
 }
 
-export interface BleStopScanEvent {
+export interface ConnectPeripheralInfo {
   /**
-   * [iOS only]
+   * the id of the peripheral
+   */
+  peripheral: string;
+  /**
+   * [Android only] connect [`reasons`](https://developer.android.com/reference/android/bluetooth/BluetoothGattCallback.html#onConnectionStateChange(android.bluetooth.BluetoothGatt,%20int,%20int))
    */
   status?: number;
 }
 
-export interface BleManagerDidUpdateStateEvent {
-  state: BleState;
-}
-
-export interface BleConnectPeripheralEvent {
+export interface CentralManagerWillRestoreStateInfo {
   /**
-   * peripheral id
+   * [iOS only] an array of previously connected peripherals.
    */
-  readonly peripheral: string;
-  /**
-   * [android only]
-   */
-  readonly status?: number;
-}
-
-export type BleDiscoverPeripheralEvent = Peripheral;
-
-/**
- * [Android only]
- */
-export type BleBondedPeripheralEvent = Peripheral;
-
-export interface BleDisconnectPeripheralEvent {
-  /**
-   * peripheral id
-   */
-  readonly peripheral: string;
-  /**
-   * [android only] disconnect reason.
-   */
-  readonly status?: number;
-  /**
-   * [iOS only] disconnect error domain.
-   */
-  readonly domain?: string;
-  /**
-   * [iOS only] disconnect error code.
-   */
-  readonly code?: number;
-}
-
-export interface BleManagerDidUpdateValueForCharacteristicEvent {
-  /**
-   * characteristic UUID
-   */
-  readonly characteristic: string;
-  /**
-   * peripheral id
-   */
-  readonly peripheral: string;
-  /**
-   * service UUID
-   */
-  readonly service: string;
-  /**
-   * data as an array of numbers (which can be converted back to a Uint8Array (ByteArray),
-   * using something like [Buffer.from()](https://github.com/feross/buffer))
-   */
-  readonly value: number[];
-}
-
-/**
- * [iOS only]
- */
-export interface BleManagerDidUpdateNotificationStateForEvent {
-  /**
-   * peripheral id
-   */
-  readonly peripheral: string;
-  /**
-   * characteristic UUID
-   */
-  readonly characteristic: string;
-  /**
-   * is the characteristic notifying or not
-   */
-  readonly isNotifying: boolean;
-  /**
-   * error domain
-   */
-  readonly domain: string;
-  /**
-   * error code
-   */
-  readonly code: number;
+  peripherals: Peripheral[];
 }
