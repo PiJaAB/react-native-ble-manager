@@ -356,3 +356,10 @@ export interface BleManagerDidUpdateNotificationStateForEvent {
    */
   readonly code: number;
 }
+
+export interface CentralManagerWillRestoreStateInfo {
+  /**
+   * [iOS only] an array of previously connected peripherals.
+   */
+  peripherals: Peripheral[];
+}
