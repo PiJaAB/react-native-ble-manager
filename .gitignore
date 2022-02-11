@@ -25,6 +25,8 @@ node_modules
 ## Build generated
 build/
 DerivedData
+/lib
+/lib/*
 
 *.tgz
 
