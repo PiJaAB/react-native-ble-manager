@@ -43,7 +43,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import static it.innove.ErrorHelper;
-import static it.innove.ErrorHelper;
 
 
 /**
@@ -112,7 +111,6 @@ public class Peripheral extends BluetoothGattCallback {
         Log.d(BleManager.LOG_TAG, "Peripheral event (" + eventName + "):" + device.getAddress());
     }
 
-    public void connect(final Callback callback, Activity activity, ReadableMap options) {
     private WritableMap makeError(String message, BleErrorCode code) {
         return ErrorHelper.makeCustomError(message, code, device);
     }

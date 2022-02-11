@@ -416,7 +416,7 @@ class BleManager extends ReactContextBaseJavaModule {
 
         Peripheral peripheral = peripherals.get(deviceUUID);
         if (peripheral == null) {
-            callback.invoke("Peripheral not found", null);
+            callback.invoke(makeCustomError("Peripheral not found", BleErrorCode.PERIPHERAL_NOT_FOUND), null);
         }
 
         peripheral.readDescriptor(
