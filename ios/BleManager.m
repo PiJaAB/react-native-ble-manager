@@ -111,7 +111,9 @@ static bool hasListeners = NO;
                 descriptor.UUID,
                 descriptor.characteristic.UUID,
                 error);
-        [self invokeAndClearDictionary:readDescriptorCallbacks withKey:key usingParameters:@[error, [NSNull null]]];
+        NSDictionary *baseDict = @{ @"peripheralUUID": [peripheral.identifier UUIDString], @"serviceUUID": [characteristic.service.UUID UUIDString], @"characteristicUUID": [characteristic.UUID UUIDString], @"peripheral": @{ @"identifier": [peripheral.identifier UUIDString], @"name": [peripheral name], @"state": [self periphalStateToString:peripheral.state] } };
+        NSDictionary *errorDict = [self iOSErrorAsDict:error dict:baseDict];
+        [self invokeAndClearDictionary:readDescriptorCallbacks withKey:key usingParameters:@[errorDict, [NSNull null]]];
         return;
     }
     NSLog(@"Read value [descriptor: %@, characteristic: %@]: (%lu) %@",
@@ -166,7 +168,7 @@ static bool hasListeners = NO;
                 [self invokeAndClearDictionary:notificationCallbacks withKey:key usingParameters:@[errorDict]];
             } else {
                 NSLog(@"Notification began on %@", characteristic.UUID);
-                [self invokeAndClearDictionary:notificationCallbacks withKey:key usingParameters:@[]];
+                [self invokeAndClearDictionary:notificationCallbacks withKey:key usingParameters:@[NSNull null]];
             }
         }
     } else {
@@ -179,7 +181,7 @@ static bool hasListeners = NO;
                 [self invokeAndClearDictionary:stopNotificationCallbacks withKey:key usingParameters:@[errorDict]];
             } else {
                 NSLog(@"Notification ended on %@", characteristic.UUID);
-                [self invokeAndClearDictionary:stopNotificationCallbacks withKey:key usingParameters:@[]];
+                [self invokeAndClearDictionary:stopNotificationCallbacks withKey:key usingParameters:@[NSNull null]];
             }
         }
     }
@@ -940,7 +942,7 @@ RCT_EXPORT_METHOD(requestMTU:(NSString *)deviceUUID mtu:(NSInteger)mtu callback:
             [self invokeAndClearDictionary:writeCallbacks withKey:key usingParameters:@[errorDict]];
         } else {
             if ([writeQueue count] == 0) {
-                [self invokeAndClearDictionary:writeCallbacks withKey:key usingParameters:@[]];
+                [self invokeAndClearDictionary:writeCallbacks withKey:key usingParameters:@[NSNull null]];
             }else{
                 // Remove and write the queud message
                 NSData *message = [writeQueue objectAtIndex:0];
