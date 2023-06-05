@@ -388,7 +388,7 @@ class BleManager extends ReactContextBaseJavaModule {
     public void read(String deviceUUID, String serviceUUID, String characteristicUUID, Callback callback) {
         Log.d(LOG_TAG, "Read from: " + deviceUUID);
         if (serviceUUID == null || characteristicUUID == null) {
-            callback.invoke(makeCustomError("ServiceUUID and characteristicUUID required.", BleErrorCode.SERVICE_UUID_OR_CHARACTERISTIC_UUID_MISSING));
+            callback.invoke(makeCustomError("ServiceUUID and characteristicUUID required.", BleErrorCode.SERVICE_UUID_OR_CHARACTERISTIC_UUID_MISSING), null);
             return;
         }
         Peripheral peripheral = peripherals.get(deviceUUID);
@@ -403,13 +403,14 @@ class BleManager extends ReactContextBaseJavaModule {
     public void readDescriptor(String deviceUUID, String serviceUUID, String characteristicUUID, String descriptorUUID, Callback callback) {
         Log.d(LOG_TAG, "Read descriptor from: " + deviceUUID);
         if (serviceUUID == null || characteristicUUID == null || descriptorUUID == null) {
-            callback.invoke("ServiceUUID, CharacteristicUUID and descriptorUUID required.", null);
+            callback.invoke(makeCustomError("ServiceUUID, characteristicUUID and descriptorUUID required.", BleErrorCode.SERVICE_UUID_OR_CHARACTERISTIC_UUID_MISSING), null);
             return;
         }
 
         Peripheral peripheral = peripherals.get(deviceUUID);
         if (peripheral == null) {
-            callback.invoke("Peripheral not found", null);
+            callback.invoke(makeCustomError("Peripheral not found", BleErrorCode.PERIPHERAL_NOT_FOUND), null);
+            return;
         }
 
         peripheral.readDescriptor(
