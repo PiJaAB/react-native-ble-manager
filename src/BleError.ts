@@ -1,0 +1,196 @@
+export enum BleErrorCode {
+  NotSupported = 1,
+  NoBluetoothSupport = 2,
+  UserRefusedEnable = 4,
+  CurrentActivityUnavailable = 6,
+  InvalidPeripheralUuid = 8,
+  MaxBondRequestsReached = 10,
+  CreateBondFailed = 12,
+  RemoveBondFailed = 14,
+  PeripheralNotFound = 16,
+  ServiceUuidOrCharacteristicUuidMissing = 18,
+  BondRequestDenied = 20,
+  IllegalRemoveWhileConnected = 22,
+  WriteDescriptorFailed = 24,
+  ReadDescriptorFailed = 25,
+  MissingNotifyOrIndicateFlag = 26,
+  SetNotificationFailed = 28,
+  CharacteristicNotFound = 30,
+  PeripheralNotConnected = 32,
+  GattIsNull = 34,
+  PeripheralDisconnected = 36,
+  ConnectionError = 38,
+  InvalidApiVersion = 40,
+  ReadFailed = 42,
+  RssiReadFailed = 44,
+  CacheRefreshFailed = 46,
+  UnknownException = 48,
+  WriteFailed = 50,
+  WriteInterrupted = 52,
+  IOSError = 53,
+  AndroidError = 54,
+  GattError = 55,
+  RequestMTUFailed = 56,
+}
+
+export enum IOSErrorCode {
+  Unknown = 0,
+  InvalidParameters = 1,
+  InvalidHandle = 2,
+  PeripheralNotConnected = 3,
+  OutOfSpace = 4,
+  OperationCancelled = 5,
+  ConnectionTimeout = 6,
+  PeripheralDisconnected = 7,
+  UuidNotAllowed = 8,
+  AlreadyAdvertising = 9,
+  ConnectionFailed = 10,
+  ConnectionLimitReached = 11,
+  UnknownDevice = 12,
+  OperationNotSupported = 13,
+}
+
+export enum GattCode {
+  Success = 0,
+  InvalidHandle = 1,
+  ReadNotPermitted = 2,
+  WriteNotPermitted = 3,
+  InvalidPdu = 4,
+  InsufficientAuthentication = 5,
+  RequestNotSupported = 6,
+  InvalidOffset = 7,
+  InsufficientAuthorization = 8,
+  PrepareQueueFull = 9,
+  AttributeNotFound = 10,
+  AttributeNotLong = 11,
+  InsufficientEncryptionKeySize = 12,
+  InvalidAttributeValueLength = 13,
+  UnlikelyError = 14,
+  InsufficientEncryption = 15,
+  UnsupportedGroupType = 16,
+  InsufficientResources = 17,
+  ConnectionCongested = 143,
+  Failure = 257,
+}
+
+function isObject(o: unknown): o is Record<string, unknown> {
+  return typeof o === "object" && o != null && !Array.isArray(o);
+}
+
+function getTypeName(o: unknown): string {
+  if (o === null) {
+    return "null";
+  }
+  if (Array.isArray(o)) {
+    return "array";
+  }
+  return typeof o;
+}
+
+function isValidError(o: Record<string, unknown>): o is {
+  message: string;
+  iosCode?: number | null;
+  iosDomain?: string | null;
+  attErrorCode?: number | null;
+  minAdkVersion?: number | null;
+  customCode?: number | null;
+  peripheralUUID?: string | null;
+  serviceUUID?: string | null;
+  characteristicUUID?: string | null;
+  descriptorUUID?: string | null;
+} {
+  const { message, iosCode, iosDomain, attErrorCode, minAdkVersion, customCode, peripheralUUID, serviceUUID, characteristicUUID, descriptorUUID } = o;
+  return (
+    typeof message === "string" &&
+    (iosCode == null || typeof iosCode === "number") &&
+    (iosDomain == null || typeof iosDomain === "string") &&
+    (attErrorCode == null || typeof attErrorCode === "number") &&
+    (minAdkVersion == null || typeof minAdkVersion === "number") &&
+    (customCode == null || typeof customCode === "number") &&
+    (peripheralUUID == null || typeof peripheralUUID === "string") &&
+    (serviceUUID == null || typeof serviceUUID === "string") &&
+    (characteristicUUID == null || typeof characteristicUUID === "string") &&
+    (descriptorUUID == null || typeof descriptorUUID === "string")
+  );
+}
+
+export default class BleError extends Error {
+  raw: unknown;
+  iosCode: number | null;
+  iosDomain: string | null;
+  attErrorCode: number | null;
+  minAdkVersion: number | null;
+  customCode: BleErrorCode | number | null;
+  peripheralUUID: string | null;
+  serviceUUID: string | null;
+  characteristicUUID: string | null;
+  descriptorUUID: string | null;
+
+  constructor(err: unknown) {
+    if (typeof err === "string") {
+      super(err);
+      this.name = `${this.name}(RAW_STRING_ERROR)`;
+      this.raw = err;
+      this.iosCode = null;
+      this.iosDomain = null;
+      this.attErrorCode = null;
+      this.minAdkVersion = null;
+      this.customCode = null;
+      this.peripheralUUID = null;
+      this.serviceUUID = null;
+      this.characteristicUUID = null;
+      this.descriptorUUID = null;
+    } else if (!isObject(err)) {
+      super(`${getTypeName(err)} was thrown`);
+      this.name = `${this.name}(NON_OBJECT_ERROR)`;
+      this.raw = err;
+      this.iosCode = null;
+      this.iosDomain = null;
+      this.attErrorCode = null;
+      this.minAdkVersion = null;
+      this.customCode = null;
+      this.peripheralUUID = null;
+      this.serviceUUID = null;
+      this.characteristicUUID = null;
+      this.descriptorUUID = null;
+    } else if (!isValidError(err)) {
+      const maybeMessage = err.message;
+      if (typeof maybeMessage === 'string') {
+        super(maybeMessage);
+      } else {
+        super();
+      }
+      this.name = `${this.name}(INVALID_OBJECT_ERROR)`;
+      this.raw = err;
+      this.iosCode = null;
+      this.iosDomain = null;
+      this.attErrorCode = null;
+      this.minAdkVersion = null;
+      this.customCode = null;
+      this.peripheralUUID = null;
+      this.serviceUUID = null;
+      this.characteristicUUID = null;
+      this.descriptorUUID = null;
+    } else {
+      super(err.message);
+      Object.defineProperty(this, 'raw', {
+        value: err,
+        enumerable: false,
+      });
+      if (err.iosDomain) {
+        this.name = `${this.name}(${err.iosDomain})`;
+      }
+      const {iosCode, iosDomain, attErrorCode, minAdkVersion, customCode, peripheralUUID, serviceUUID, characteristicUUID, descriptorUUID } = err;
+      this.iosCode = iosCode ?? null;
+      this.iosDomain = iosDomain ?? null;
+      this.attErrorCode = attErrorCode ?? null;
+      this.minAdkVersion = minAdkVersion ?? null;
+      this.customCode = customCode ?? null;
+      this.peripheralUUID = peripheralUUID ?? null;
+      this.serviceUUID = serviceUUID ?? null;
+      this.characteristicUUID = characteristicUUID ?? null;
+      this.descriptorUUID = descriptorUUID ?? null;
+    }
+  }
+}
+BleError.prototype.name = BleError.name;

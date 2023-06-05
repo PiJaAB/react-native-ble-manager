@@ -2,20 +2,32 @@ import {
   EmitterSubscription,
   NativeEventEmitter,
   NativeModules,
-} from 'react-native';
-import { CentralManagerWillRestoreStateInfo, CharacteristicValueUpdate, ConnectPeripheralInfo, Peripheral, UpdateStateInfo } from './types';
+} from "react-native";
+import {
+  BleBondedPeripheralEvent,
+  BleConnectPeripheralEvent,
+  BleDisconnectPeripheralEvent,
+  BleDiscoverPeripheralEvent,
+  BleManagerCentralManagerWillRestoreStateEvent,
+  BleManagerDidUpdateNotificationStateForEvent,
+  BleManagerDidUpdateStateEvent,
+  BleManagerDidUpdateValueForCharacteristicEvent,
+  BleStopScanEvent,
+} from "./types";
+
 
 const bleManager = NativeModules.BleManager;
 
 type EventMap = {
-  BleManagerStopScan: void;
-  BleManagerDidUpdateState: UpdateStateInfo;
-  BleManagerDiscoverPeripheral: Peripheral;
-  BleManagerDidUpdateValueForCharacteristic: CharacteristicValueUpdate;
-  BleManagerConnectPeripheral: ConnectPeripheralInfo;
-  BleManagerDisconnectPeripheral: ConnectPeripheralInfo;
-  BleManagerPeripheralDidBond: unknown;
-  BleManagerCentralManagerWillRestoreState: CentralManagerWillRestoreStateInfo;
+  BleManagerStopScan: BleStopScanEvent;
+  BleManagerDidUpdateState: BleManagerDidUpdateStateEvent;
+  BleManagerDiscoverPeripheral: BleDiscoverPeripheralEvent;
+  BleManagerDidUpdateValueForCharacteristic: BleManagerDidUpdateValueForCharacteristicEvent;
+  BleManagerConnectPeripheral: BleConnectPeripheralEvent;
+  BleManagerDisconnectPeripheral: BleDisconnectPeripheralEvent;
+  BleManagerPeripheralDidBond: BleBondedPeripheralEvent;
+  BleManagerCentralManagerWillRestoreState: BleManagerCentralManagerWillRestoreStateEvent;
+  BleManagerDidUpdateNotificationStateFor: BleManagerDidUpdateNotificationStateForEvent;
 };
 
 type Events = keyof EventMap;
@@ -32,9 +44,9 @@ class BleNativeEventEmitter extends NativeEventEmitter {
    * @param context — context of the listener
    */
   addListener(
-    eventType: 'BleManagerStopScan',
+    eventType: "BleManagerStopScan",
     listener: (arg: EventMap[typeof eventType]) => void,
-    context?: Object,
+    context?: Object
   ): EmitterSubscription;
   /**
    * The BLE change state.
@@ -44,9 +56,9 @@ class BleNativeEventEmitter extends NativeEventEmitter {
    * @param context — context of the listener
    */
   addListener(
-    eventType: 'BleManagerDidUpdateState',
+    eventType: "BleManagerDidUpdateState",
     listener: (arg: EventMap[typeof eventType]) => void,
-    context?: Object,
+    context?: Object
   ): EmitterSubscription;
   /**
    * The scanning found a new peripheral.
@@ -56,9 +68,9 @@ class BleNativeEventEmitter extends NativeEventEmitter {
    * @param context — context of the listener
    */
   addListener(
-    eventType: 'BleManagerDiscoverPeripheral',
+    eventType: "BleManagerDiscoverPeripheral",
     listener: (arg: EventMap[typeof eventType]) => void,
-    context?: Object,
+    context?: Object
   ): EmitterSubscription;
   /**
    * A characteristic notify a new value.
@@ -68,9 +80,9 @@ class BleNativeEventEmitter extends NativeEventEmitter {
    * @param context — context of the listener
    */
   addListener(
-    eventType: 'BleManagerDidUpdateValueForCharacteristic',
+    eventType: "BleManagerDidUpdateValueForCharacteristic",
     listener: (arg: EventMap[typeof eventType]) => void,
-    context?: Object,
+    context?: Object
   ): EmitterSubscription;
   /**
    * A peripheral was connected.
@@ -80,9 +92,9 @@ class BleNativeEventEmitter extends NativeEventEmitter {
    * @param context — context of the listener
    */
   addListener(
-    eventType: 'BleManagerConnectPeripheral',
+    eventType: "BleManagerConnectPeripheral",
     listener: (arg: EventMap[typeof eventType]) => void,
-    context?: Object,
+    context?: Object
   ): EmitterSubscription;
   /**
    * A peripheral was disconnected.
@@ -92,9 +104,9 @@ class BleNativeEventEmitter extends NativeEventEmitter {
    * @param context — context of the listener
    */
   addListener(
-    eventType: 'BleManagerDisconnectPeripheral',
+    eventType: "BleManagerDisconnectPeripheral",
     listener: (arg: EventMap[typeof eventType]) => void,
-    context?: Object,
+    context?: Object
   ): EmitterSubscription;
   /**
    * A bond with a peripheral was established
@@ -104,9 +116,9 @@ class BleNativeEventEmitter extends NativeEventEmitter {
    * @param context — context of the listener
    */
   addListener(
-    eventType: 'BleManagerPeripheralDidBond',
+    eventType: "BleManagerPeripheralDidBond",
     listener: (arg: EventMap[typeof eventType]) => void,
-    context?: Object,
+    context?: Object
   ): EmitterSubscription;
   /**
    * [iOS only] This is fired when [`centralManager:WillRestoreState:`](https://developer.apple.com/documentation/corebluetooth/cbcentralmanagerdelegate/1518819-centralmanager) is called (app relaunched in the background to handle a bluetooth event).
@@ -116,15 +128,27 @@ class BleNativeEventEmitter extends NativeEventEmitter {
    * @param context — context of the listener
    */
   addListener(
-    eventType: 'BleManagerCentralManagerWillRestoreState',
+    eventType: "BleManagerCentralManagerWillRestoreState",
     listener: (arg: EventMap[typeof eventType]) => void,
-    context?: Object,
+    context?: Object
+  ): EmitterSubscription;
+  /**
+   * [iOS only] The peripheral received a request to start or stop providing notifications for a specified characteristic's value.
+   *
+   * @param eventType — name of the event for which we are registering listener
+   * @param listener — the listener function
+   * @param context — context of the listener
+   */
+  addListener(
+    eventType: "BleManagerDidUpdateNotificationStateFor",
+    listener: (arg: EventMap[typeof eventType]) => void,
+    context?: Object
   ): EmitterSubscription;
   addListener<Ev extends Events>(
     ...args: [
       eventType: Ev,
       listener: (event: EventMap[Ev]) => void,
-      context?: Object,
+      context?: Object
     ]
   ): EmitterSubscription {
     return super.addListener(...args);
