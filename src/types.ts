@@ -363,3 +363,18 @@ export interface CentralManagerWillRestoreStateInfo {
    */
   peripherals: Peripheral[];
 }
+
+export interface TransformedAdvertizingData extends Omit<AdvertisingData, 'serviceData' | 'manufacturerData'> {
+  manufacturerData?: Uint8Array;
+  serviceData?: Uint8Array;
+}
+export interface TransformedBleDiscoverPeripheralEvent extends Omit<BleDiscoverPeripheralEvent, 'advertising'> {
+  advertising: TransformedAdvertizingData;
+}
+
+export interface TransformedBleManagerDidUpdateValueForCharacteristicEvent extends Omit<BleManagerDidUpdateValueForCharacteristicEvent, 'value'> {
+  /**
+   * data as an Uint8Array (ByteArray)
+   */
+  value: Uint8Array;
+}

@@ -17,3 +17,7 @@ gradlew
 /ios/**/*xcuserdata*
 /ios/**/*xcshareddata*
 *.log
+/.github
+/src
+tsconfig.json
+package-lock.json

@@ -286,9 +286,9 @@ public class Peripheral extends BluetoothGattCallback {
 
                     characteristicsMap.putMap("properties", Helper.decodeProperties(characteristic));
 
-                    if (characteristic.getPermissions() > 0) {
-                        characteristicsMap.putMap("permissions", Helper.decodePermissions(characteristic));
-                    }
+					if (characteristic.getPermissions() > 0) {
+						characteristicsMap.putMap("permissions", Helper.decodePermissions(characteristic));
+					}
 
                     WritableArray descriptorsArray = Arguments.createArray();
 
@@ -302,21 +302,21 @@ public class Peripheral extends BluetoothGattCallback {
                             descriptorMap.putString("value", null);
                         }
 
-                        if (descriptor.getPermissions() > 0) {
-                            descriptorMap.putMap("permissions", Helper.decodePermissions(descriptor));
-                        }
-                        descriptorsArray.pushMap(descriptorMap);
-                    }
-                    if (descriptorsArray.size() > 0) {
-                        characteristicsMap.putArray("descriptors", descriptorsArray);
-                    }
-                    characteristicsArray.pushMap(characteristicsMap);
-                }
-                servicesArray.pushMap(serviceMap);
-            }
-            map.putArray("services", servicesArray);
-            map.putArray("characteristics", characteristicsArray);
-        }
+						if (descriptor.getPermissions() > 0) {
+							descriptorMap.putMap("permissions", Helper.decodePermissions(descriptor));
+						}
+						descriptorsArray.pushMap(descriptorMap);
+					}
+					if (descriptorsArray.size() > 0) {
+						characteristicsMap.putArray("descriptors", descriptorsArray);
+					}
+					characteristicsArray.pushMap(characteristicsMap);
+				}
+				servicesArray.pushMap(serviceMap);
+			}
+			map.putArray("services", servicesArray);
+			map.putArray("characteristics", characteristicsArray);
+		}
 
         return map;
     }
@@ -480,8 +480,8 @@ public class Peripheral extends BluetoothGattCallback {
     public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
         super.onCharacteristicChanged(gatt, characteristic);
         try {
-            String charString = characteristic.getUuid().toString();
-            String service = characteristic.getService().getUuid().toString();
+            String charString = UUIDHelper.uuidToString(characteristic.getUuid());
+			String service = UUIDHelper.uuidToString(characteristic.getService().getUuid());
             NotifyBufferContainer buffer = this.bufferedCharacteristics
                     .get(this.bufferedCharacteristicsKey(service, charString));
             byte[] dataValue = characteristic.getValue();

@@ -53,7 +53,7 @@ class BleManager {
   }
 
   /**
-   * refreshes the peripheral's services and characteristics cache.
+   * [Android only] Refreshes the peripheral's services and characteristics cache.
    *
    * @param peripheralId the id/mac address of the peripheral.
    * @returns A {@link Promise} object.
@@ -120,7 +120,7 @@ class BleManager {
         peripheralId,
         serviceUUID,
         characteristicUUID,
-        data,
+        data instanceof Uint8Array ? [...data] as number[] : data,
         maxByteSize,
         (error: Error | null) => {
           if (error) {
@@ -148,7 +148,7 @@ class BleManager {
     peripheralId: string,
     serviceUUID: string,
     characteristicUUID: string,
-    data: any,
+    data: Uint8Array | number[],
     maxByteSize?: number,
     queueSleepTime?: number,
   ) {
@@ -163,7 +163,7 @@ class BleManager {
         peripheralId,
         serviceUUID,
         characteristicUUID,
-        data,
+        data instanceof Uint8Array ? [...data] as number[] : data,
         maxByteSize,
         queueSleepTime,
         (error: Error | null) => {
@@ -189,7 +189,6 @@ class BleManager {
     return new Promise<void>((fulfill, reject) => {
       bleManager.connect(peripheralId, (error: Error | null) => {
         if (error) {
-          console.log(typeof error);
           reject(new BleError(error));
         } else {
           fulfill();
