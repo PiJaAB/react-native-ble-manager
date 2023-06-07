@@ -14,6 +14,7 @@ import {
 } from './types';
 
 export * from './types';
+export * from './BleError';
 export { default as BleEventEmitter } from './emitter';
 export { default as BleError } from './BleError';
 

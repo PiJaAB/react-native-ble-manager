@@ -120,7 +120,7 @@ function isValidError(o: Record<string, unknown>): o is {
 export default class BleError extends Error {
   raw: unknown;
   iosCode: {
-    code: IosCBErrorCode;
+    code: IOSCBErrorCode;
     domain: 'CBErrorDomain';
   } | {
     code: number
