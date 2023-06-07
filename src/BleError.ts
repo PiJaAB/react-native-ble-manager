@@ -33,7 +33,7 @@ export enum BleErrorCode {
   RequestMTUFailed = 56,
 }
 
-export enum IOSErrorCode {
+export enum IOSCBErrorCode {
   Unknown = 0,
   InvalidParameters = 1,
   InvalidHandle = 2,
@@ -48,6 +48,9 @@ export enum IOSErrorCode {
   ConnectionLimitReached = 11,
   UnknownDevice = 12,
   OperationNotSupported = 13,
+  PeerRemovedPairingInformation = 14,
+  EncryptionTimedOut = 15,
+  TooManyLEPairedDevices = 16,
 }
 
 export enum GattCode {
@@ -91,22 +94,22 @@ function isValidError(o: Record<string, unknown>): o is {
   message: string;
   iosCode?: number | null;
   iosDomain?: string | null;
-  attErrorCode?: number | null;
+  attCode?: number | null;
   minAdkVersion?: number | null;
-  customCode?: number | null;
+  code?: number | null;
   peripheralUUID?: string | null;
   serviceUUID?: string | null;
   characteristicUUID?: string | null;
   descriptorUUID?: string | null;
 } {
-  const { message, iosCode, iosDomain, attErrorCode, minAdkVersion, customCode, peripheralUUID, serviceUUID, characteristicUUID, descriptorUUID } = o;
+  const { message, iosCode, iosDomain, attCode, minAdkVersion, code, peripheralUUID, serviceUUID, characteristicUUID, descriptorUUID } = o;
   return (
     typeof message === "string" &&
     (iosCode == null || typeof iosCode === "number") &&
     (iosDomain == null || typeof iosDomain === "string") &&
-    (attErrorCode == null || typeof attErrorCode === "number") &&
+    (attCode == null || typeof attCode === "number") &&
     (minAdkVersion == null || typeof minAdkVersion === "number") &&
-    (customCode == null || typeof customCode === "number") &&
+    (code == null || typeof code === "number") &&
     (peripheralUUID == null || typeof peripheralUUID === "string") &&
     (serviceUUID == null || typeof serviceUUID === "string") &&
     (characteristicUUID == null || typeof characteristicUUID === "string") &&
@@ -116,11 +119,16 @@ function isValidError(o: Record<string, unknown>): o is {
 
 export default class BleError extends Error {
   raw: unknown;
-  iosCode: number | null;
-  iosDomain: string | null;
-  attErrorCode: number | null;
+  iosCode: {
+    code: IOSCBErrorCode;
+    domain: 'CBErrorDomain';
+  } | {
+    code: number
+    domain: string;
+  } | null;
+  attCode: number | null;
   minAdkVersion: number | null;
-  customCode: BleErrorCode | number | null;
+  code: BleErrorCode | number | null;
   peripheralUUID: string | null;
   serviceUUID: string | null;
   characteristicUUID: string | null;
@@ -132,10 +140,9 @@ export default class BleError extends Error {
       this.name = `${this.name}(RAW_STRING_ERROR)`;
       this.raw = err;
       this.iosCode = null;
-      this.iosDomain = null;
-      this.attErrorCode = null;
+      this.attCode = null;
       this.minAdkVersion = null;
-      this.customCode = null;
+      this.code = null;
       this.peripheralUUID = null;
       this.serviceUUID = null;
       this.characteristicUUID = null;
@@ -145,10 +152,9 @@ export default class BleError extends Error {
       this.name = `${this.name}(NON_OBJECT_ERROR)`;
       this.raw = err;
       this.iosCode = null;
-      this.iosDomain = null;
-      this.attErrorCode = null;
+      this.attCode = null;
       this.minAdkVersion = null;
-      this.customCode = null;
+      this.code = null;
       this.peripheralUUID = null;
       this.serviceUUID = null;
       this.characteristicUUID = null;
@@ -163,10 +169,9 @@ export default class BleError extends Error {
       this.name = `${this.name}(INVALID_OBJECT_ERROR)`;
       this.raw = err;
       this.iosCode = null;
-      this.iosDomain = null;
-      this.attErrorCode = null;
+      this.attCode = null;
       this.minAdkVersion = null;
-      this.customCode = null;
+      this.code = null;
       this.peripheralUUID = null;
       this.serviceUUID = null;
       this.characteristicUUID = null;
@@ -180,12 +185,14 @@ export default class BleError extends Error {
       if (err.iosDomain) {
         this.name = `${this.name}(${err.iosDomain})`;
       }
-      const {iosCode, iosDomain, attErrorCode, minAdkVersion, customCode, peripheralUUID, serviceUUID, characteristicUUID, descriptorUUID } = err;
-      this.iosCode = iosCode ?? null;
-      this.iosDomain = iosDomain ?? null;
-      this.attErrorCode = attErrorCode ?? null;
+      const {iosCode, iosDomain, attCode, minAdkVersion, code, peripheralUUID, serviceUUID, characteristicUUID, descriptorUUID } = err;
+      this.iosCode = iosCode != null ? {
+        code: iosCode,
+        domain: iosDomain ?? 'UNKNOWN_DOMAIN',
+      } : null;
+      this.attCode = attCode ?? null;
       this.minAdkVersion = minAdkVersion ?? null;
-      this.customCode = customCode ?? null;
+      this.code = code ?? null;
       this.peripheralUUID = peripheralUUID ?? null;
       this.serviceUUID = serviceUUID ?? null;
       this.characteristicUUID = characteristicUUID ?? null;

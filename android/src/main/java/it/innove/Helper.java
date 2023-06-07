@@ -3,48 +3,47 @@ package it.innove;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import com.facebook.react.bridge.Arguments;
-import com.facebook.react.bridge.WritableMap;
-import org.json.JSONArray;
+import com.facebook.react.bridge.WritableArray;
 
 public class Helper {
 
-	public static WritableMap decodeProperties(BluetoothGattCharacteristic characteristic) {
+	public static WritableArray decodeProperties(BluetoothGattCharacteristic characteristic) {
 
 		// NOTE: props strings need to be consistent across iOS and Android
-		WritableMap props = Arguments.createMap();
+		WritableArray props = Arguments.createArray();
 		int properties = characteristic.getProperties();
 
 		if ((properties & BluetoothGattCharacteristic.PROPERTY_BROADCAST) != 0x0 ) {
-			props.putString("Broadcast", "Broadcast");
+			props.pushString("Broadcast");
 		}
 
 		if ((properties & BluetoothGattCharacteristic.PROPERTY_READ) != 0x0 ) {
-			props.putString("Read", "Read");
+			props.pushString("Read");
 		}
 
 		if ((properties & BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE) != 0x0 ) {
-			props.putString("WriteWithoutResponse", "WriteWithoutResponse");
+			props.pushString("WriteWithoutResponse");
 		}
 
 		if ((properties & BluetoothGattCharacteristic.PROPERTY_WRITE) != 0x0 ) {
-			props.putString("Write", "Write");
+			props.pushString("Write");
 		}
 
 		if ((properties & BluetoothGattCharacteristic.PROPERTY_NOTIFY) != 0x0 ) {
-			props.putString("Notify", "Notify");
+			props.pushString("Notify");
 		}
 
 		if ((properties & BluetoothGattCharacteristic.PROPERTY_INDICATE) != 0x0 ) {
-			props.putString("Indicate", "Indicate");
+			props.pushString("Indicate");
 		}
 
 		if ((properties & BluetoothGattCharacteristic.PROPERTY_SIGNED_WRITE) != 0x0 ) {
 			// Android calls this "write with signature", using iOS name for now
-			props.putString("AuthenticateSignedWrites", "AuthenticateSignedWrites");
+			props.pushString("AuthenticateSignedWrites");
 		}
 
 		if ((properties & BluetoothGattCharacteristic.PROPERTY_EXTENDED_PROPS) != 0x0 ) {
-			props.putString("ExtendedProperties", "ExtendedProperties");
+			props.pushString("ExtendedProperties");
 		}
 
 //      iOS only?
@@ -60,83 +59,83 @@ public class Helper {
 		return props;
 	}
 
-	public static WritableMap decodePermissions(BluetoothGattCharacteristic characteristic) {
+	public static WritableArray decodePermissions(BluetoothGattCharacteristic characteristic) {
 
 		// NOTE: props strings need to be consistent across iOS and Android
-		WritableMap props = Arguments.createMap();
+		WritableArray props = Arguments.createArray();
 		int permissions = characteristic.getPermissions();
 
 		if ((permissions & BluetoothGattCharacteristic.PERMISSION_READ) != 0x0 ) {
-			props.putString("Read", "Read");
+			props.pushString("Read");
 		}
 
 		if ((permissions & BluetoothGattCharacteristic.PERMISSION_WRITE) != 0x0 ) {
-			props.putString("Write", "Write");
+			props.pushString("Write");
 		}
 
 		if ((permissions & BluetoothGattCharacteristic.PERMISSION_READ_ENCRYPTED) != 0x0 ) {
-			props.putString("ReadEncrypted", "ReadEncrypted");
+			props.pushString("ReadEncrypted");
 		}
 
 		if ((permissions & BluetoothGattCharacteristic.PERMISSION_WRITE_ENCRYPTED) != 0x0 ) {
-			props.putString("WriteEncrypted", "WriteEncrypted");
+			props.pushString("WriteEncrypted");
 		}
 
 		if ((permissions & BluetoothGattCharacteristic.PERMISSION_READ_ENCRYPTED_MITM) != 0x0 ) {
-			props.putString("ReadEncryptedMITM", "ReadEncryptedMITM");
+			props.pushString("ReadEncryptedMITM");
 		}
 
 		if ((permissions & BluetoothGattCharacteristic.PERMISSION_WRITE_ENCRYPTED_MITM) != 0x0 ) {
-			props.putString("WriteEncryptedMITM", "WriteEncryptedMITM");
+			props.pushString("WriteEncryptedMITM");
 		}
 
 		if ((permissions & BluetoothGattCharacteristic.PERMISSION_WRITE_SIGNED) != 0x0 ) {
-			props.putString("WriteSigned", "WriteSigned");
+			props.pushString("WriteSigned");
 		}
 
 		if ((permissions & BluetoothGattCharacteristic.PERMISSION_WRITE_SIGNED_MITM) != 0x0 ) {
-			props.putString("WriteSignedMITM", "WriteSignedMITM");
+			props.pushString("WriteSignedMITM");
 		}
 
 		return props;
 	}
 
-	public static WritableMap decodePermissions(BluetoothGattDescriptor descriptor) {
+	public static WritableArray decodePermissions(BluetoothGattDescriptor descriptor) {
 
 		// NOTE: props strings need to be consistent across iOS and Android
-		WritableMap props = Arguments.createMap();
+		WritableArray props = Arguments.createArray();
 		int permissions = descriptor.getPermissions();
 
 		if ((permissions & BluetoothGattDescriptor.PERMISSION_READ) != 0x0 ) {
-			props.putString("Read", "Read");
+			props.pushString("Read");
 		}
 
 		if ((permissions & BluetoothGattDescriptor.PERMISSION_WRITE) != 0x0 ) {
-			props.putString("Write", "Write");
+			props.pushString("Write");
 		}
 
 		if ((permissions & BluetoothGattDescriptor.PERMISSION_READ_ENCRYPTED) != 0x0 ) {
-			props.putString("ReadEncrypted", "ReadEncrypted");
+			props.pushString("ReadEncrypted");
 		}
 
 		if ((permissions & BluetoothGattDescriptor.PERMISSION_WRITE_ENCRYPTED) != 0x0 ) {
-			props.putString("WriteEncrypted", "WriteEncrypted");
+			props.pushString("WriteEncrypted");
 		}
 
 		if ((permissions & BluetoothGattDescriptor.PERMISSION_READ_ENCRYPTED_MITM) != 0x0 ) {
-			props.putString("ReadEncryptedMITM", "ReadEncryptedMITM");
+			props.pushString("ReadEncryptedMITM");
 		}
 
 		if ((permissions & BluetoothGattDescriptor.PERMISSION_WRITE_ENCRYPTED_MITM) != 0x0 ) {
-			props.putString("WriteEncryptedMITM", "WriteEncryptedMITM");
+			props.pushString("WriteEncryptedMITM");
 		}
 
 		if ((permissions & BluetoothGattDescriptor.PERMISSION_WRITE_SIGNED) != 0x0 ) {
-			props.putString("WriteSigned", "WriteSigned");
+			props.pushString("WriteSigned");
 		}
 
 		if ((permissions & BluetoothGattDescriptor.PERMISSION_WRITE_SIGNED_MITM) != 0x0 ) {
-			props.putString("WriteSignedMITM", "WriteSignedMITM");
+			props.pushString("WriteSignedMITM");
 		}
 
 		return props;

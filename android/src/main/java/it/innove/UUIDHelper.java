@@ -25,7 +25,7 @@ public class UUIDHelper {
 		Matcher matcher = pattern.matcher(longUUID);
 		if (matcher.matches()) {
 			// 16 bit UUID
-			return matcher.group(1);
+			return matcher.group(1).toUpperCase();
 		} else {
 			return longUUID;
 		}
