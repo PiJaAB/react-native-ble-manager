@@ -196,18 +196,7 @@ export interface Characteristic {
   /**
    * See https://developer.apple.com/documentation/corebluetooth/cbcharacteristicproperties
    */
-  properties: {
-    Broadcast?: "Broadcast";
-    Read?: "Read";
-    WriteWithoutResponse?: "WriteWithoutResponse";
-    Write?: "Write";
-    Notify?: "Notify";
-    Indicate?: "Indicate";
-    AuthenticatedSignedWrites?: "AuthenticatedSignedWrites";
-    ExtendedProperties?: "ExtendedProperties";
-    NotifyEncryptionRequired?: "NotifyEncryptionRequired";
-    IndicateEncryptionRequired?: "IndicateEncryptionRequired";
-  }
+  properties: ("Broadcast" | "Read" | "WriteWithoutResponse" | "Write" | "Notify" | "Indicate" | "AuthenticatedSignedWrites" | "ExtendedProperties" | "NotifyEncryptionRequired" | "IndicateEncryptionRequired")[];
   characteristic: string;
   service: string;
   descriptors?: Descriptor[];
