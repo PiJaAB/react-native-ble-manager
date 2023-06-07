@@ -333,7 +333,6 @@ typedef NS_ENUM(NSInteger, BleErrorCode) {
 - (NSDictionary*)iOSErrorAsDict:(NSError *)error msg:(NSString * _Nullable) msg dict:(NSDictionary * _Nullable) dict {
     NSMutableDictionary *mutableDict = dict == nil ? [NSMutableDictionary dictionary] : [dict mutableCopy];
     NSString *errorStr = msg == nil ? [error localizedDescription] : msg;
-    NSLog(@"%@", errorStr);
     if (error.domain != CBATTErrorDomain) {
         mutableDict[@"code"] = [NSNumber numberWithInteger: BleErrorCodeIosError];
         mutableDict[@"iosDomain"] = error.domain;
@@ -872,6 +871,18 @@ RCT_EXPORT_METHOD(getBondedPeripherals:(nonnull RCTResponseSenderBlock)callback)
 }
 
 RCT_EXPORT_METHOD(createBond:(NSString *)deviceUUID devicePin:(NSString *)devicePin callback:(nonnull RCTResponseSenderBlock)callback)
+{
+    NSDictionary *errorDict = [self customError:@"Not supported" code: BleErrorCodeNotSupported];
+    callback(@[errorDict]);
+}
+
+RCT_EXPORT_METHOD(refreshCache:(NSString *)deviceUUID devicePin:(NSString *)devicePin callback:(nonnull RCTResponseSenderBlock)callback)
+{
+    NSDictionary *errorDict = [self customError:@"Not supported" code: BleErrorCodeNotSupported];
+    callback(@[errorDict]);
+}
+
+RCT_EXPORT_METHOD(refreshCache:(NSString *)deviceUUID devicePin:(NSString *)devicePin callback:(nonnull RCTResponseSenderBlock)callback)
 {
     NSDictionary *errorDict = [self customError:@"Not supported" code:BleErrorCodeNotSupported];
     callback(@[errorDict]);

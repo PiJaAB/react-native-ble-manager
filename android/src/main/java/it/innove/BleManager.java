@@ -227,24 +227,26 @@ class BleManager extends ReactContextBaseJavaModule {
     public void createBond(String peripheralUUID, String peripheralPin, Callback callback) {
         Log.d(LOG_TAG, "Request bond to: " + peripheralUUID);
 
-        Set<BluetoothDevice> deviceSet = getBluetoothAdapter().getBondedDevices();
-        for (BluetoothDevice device : deviceSet) {
-            if (peripheralUUID.equalsIgnoreCase(device.getAddress())) {
-                callback.invoke();
-                return;
-            }
-        }
-
         Peripheral peripheral = retrieveOrCreatePeripheral(peripheralUUID);
         if (peripheral == null) {
             callback.invoke(makeCustomError("Invalid peripheral uuid", BleErrorCode.INVALID_PERIPHERAL_UUID));
             return;
+        }
+        int bondState = peripheral.getDevice().getBondState();
+        if (bondState == BluetoothDevice.BOND_BONDED) {
+            Log.d(LOG_TAG, "Bond already complete for: " + peripheralUUID);
+            callback.invoke(null, false);
+            return;
         } else if (bondRequest != null) {
             callback.invoke(makeCustomError("Only allow one bond request at a time", BleErrorCode.MAX_BOND_REQUESTS_REACHED));
             return;
+        } else if (bondState == BluetoothDevice.BOND_BONDING) {
+            Log.d(LOG_TAG, "Bond already in progress. Awaiting result for: " + peripheralUUID);
+            bondRequest = new BondRequest(peripheralUUID, peripheralPin, callback); // request bond success, waiting for broadcast
+            return;
         } else if (peripheral.getDevice().createBond()) {
             Log.d(LOG_TAG, "Request bond successful for: " + peripheralUUID);
-            bondRequest = new BondRequest(peripheralUUID, peripheralPin, callback); // request bond success, waiting for boradcast
+            bondRequest = new BondRequest(peripheralUUID, peripheralPin, callback); // request bond success, waiting for broadcast
             return;
         }
 
@@ -578,7 +580,7 @@ class BleManager extends ReactContextBaseJavaModule {
 
                 if (bondRequest != null && bondRequest.uuid.equals(device.getAddress())) {
                     if (bondState == BluetoothDevice.BOND_BONDED) {
-                        bondRequest.callback.invoke();
+                        bondRequest.callback.invoke(null, true);
                         bondRequest = null;
                     } else if (bondState == BluetoothDevice.BOND_NONE || bondState == BluetoothDevice.ERROR) {
                         bondRequest.callback.invoke(makeCustomError("Bond request has been denied", BleErrorCode.BOND_REQUEST_DENIED));
