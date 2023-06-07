@@ -28,14 +28,14 @@ export enum BleState {
   TurningOff = 'turning_off',
 }
 
-export interface Peripheral {
+export interface RawPeripheral {
   id: string;
   rssi: number;
   name?: string;
-  advertising: AdvertisingData;
+  advertising: RawAdvertisingData;
 }
 
-export interface AdvertisingData {
+export interface RawAdvertisingData {
   isConnectable?: boolean;
   localName?: string;
   manufacturerData?: CustomAdvertisingData,
@@ -55,6 +55,21 @@ export interface CustomAdvertisingData {
    * base64-encoded string of the data
    */
   data: string
+}
+
+export interface AdvertisingData extends Omit<RawAdvertisingData, 'manufacturerData' | 'serviceData'> {
+  /**
+   * Manufacter data as an Uint8Array (ByteArray)
+   */
+  manufacturerData?: Uint8Array;
+  /**
+   * Service data as an Uint8Array (ByteArray)
+   */
+  serviceData?: Uint8Array;
+}
+
+export interface Peripheral extends Omit<RawPeripheral, 'advertising'> {
+  advertising: AdvertisingData;
 }
 
 export interface StartOptions {
@@ -214,6 +229,12 @@ export interface Characteristic {
 
 }
 
+export interface RawPeripheralInfo extends RawPeripheral {
+  serviceUUIDs?: string[];
+  characteristics?: Characteristic[];
+  services?: Service[];
+}
+
 export interface PeripheralInfo extends Peripheral {
   serviceUUIDs?: string[];
   characteristics?: Characteristic[];
@@ -263,12 +284,12 @@ export interface BleConnectPeripheralEvent {
   readonly status?: number;
 }
 
-export type BleDiscoverPeripheralEvent = Peripheral;
+export type BleDiscoverPeripheralEvent = RawPeripheral;
 
 /**
  * [Android only]
  */
-export type BleBondedPeripheralEvent = Peripheral;
+export type BleBondedPeripheralEvent = RawPeripheral;
 
 export interface BleDisconnectPeripheralEvent {
   /**
@@ -316,7 +337,7 @@ export interface BleManagerCentralManagerWillRestoreStateEvent {
   /**
    * [iOS only] an array of previously connected peripherals.
    */
-  peripherals: Peripheral[];
+  peripherals: RawPeripheral[];
 }
 
 
@@ -357,13 +378,15 @@ export interface TransformedAdvertizingData extends Omit<AdvertisingData, 'servi
   manufacturerData?: Uint8Array;
   serviceData?: Uint8Array;
 }
-export interface TransformedBleDiscoverPeripheralEvent extends Omit<BleDiscoverPeripheralEvent, 'advertising'> {
-  advertising: TransformedAdvertizingData;
-}
+export type TransformedBleDiscoverPeripheralEvent = Peripheral;
+export type TransformedBleBondedPeripheralEvent = Peripheral;
 
 export interface TransformedBleManagerDidUpdateValueForCharacteristicEvent extends Omit<BleManagerDidUpdateValueForCharacteristicEvent, 'value'> {
-  /**
-   * data as an Uint8Array (ByteArray)
-   */
   value: Uint8Array;
+}
+export interface TransformedBleCentralManagerWillRestoreStateEvent extends Omit<BleManagerCentralManagerWillRestoreStateEvent, 'peripherals'> {
+  /**
+   * [iOS only] an array of previously connected peripherals.
+   */
+  peripherals: Peripheral[];
 }

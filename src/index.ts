@@ -10,9 +10,12 @@ import {
   ConnectionPriority,
   Peripheral,
   PeripheralInfo,
+  RawPeripheral,
+  RawPeripheralInfo,
   ScanOptions,
   StartOptions
 } from './types';
+import { transformPeripheral } from './helpers';
 
 export * from './types';
 export * from './BleError';
@@ -132,11 +135,11 @@ class BleManager {
       bleManager.retrieveServices(
         peripheralId,
         serviceUUIDs,
-        (error: unknown, peripheral: PeripheralInfo) => {
+        (error: unknown, peripheral: RawPeripheralInfo) => {
           if (error != null) {
             reject(new BleError(error));
           } else {
-            fulfill(peripheral);
+            fulfill(transformPeripheral(peripheral));
           }
         }
       );
@@ -537,12 +540,12 @@ class BleManager {
   getConnectedPeripherals(serviceUUIDs: string[] = []) {
     return new Promise<Peripheral[]>((fulfill, reject) => {
 
-      bleManager.getConnectedPeripherals(serviceUUIDs, (error: unknown, result: Peripheral[] | null) => {
+      bleManager.getConnectedPeripherals(serviceUUIDs, (error: unknown, result: RawPeripheral[] | null) => {
         if (error != null) {
           reject(new BleError(error));
         } else {
           if (result) {
-            fulfill(result);
+            fulfill(result.map(transformPeripheral));
           } else {
             fulfill([]);
           }
@@ -557,12 +560,12 @@ class BleManager {
    */
   getBondedPeripherals() {
     return new Promise<Peripheral[]>((fulfill, reject) => {
-      bleManager.getBondedPeripherals((error: unknown, result: Peripheral[] | null) => {
+      bleManager.getBondedPeripherals((error: unknown, result: RawPeripheral[] | null) => {
         if (error != null) {
           reject(new BleError(error));
         } else {
           if (result) {
-            fulfill(result);
+            fulfill(result.map(transformPeripheral));
           } else {
             fulfill([]);
           }
@@ -577,12 +580,12 @@ class BleManager {
    */
   getDiscoveredPeripherals() {
     return new Promise<Peripheral[]>((fulfill, reject) => {
-      bleManager.getDiscoveredPeripherals((error: unknown, result: Peripheral[] | null) => {
+      bleManager.getDiscoveredPeripherals((error: unknown, result: RawPeripheral[] | null) => {
         if (error != null) {
           reject(new BleError(error));
         } else {
           if (result) {
-            fulfill(result);
+            fulfill(result.map(transformPeripheral));
           } else {
             fulfill([]);
           }

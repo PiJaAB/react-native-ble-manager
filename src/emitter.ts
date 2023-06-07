@@ -13,11 +13,12 @@ import {
   BleManagerDidUpdateStateEvent,
   BleManagerDidUpdateValueForCharacteristicEvent,
   BleStopScanEvent,
-  TransformedAdvertizingData,
+  TransformedBleBondedPeripheralEvent,
+  TransformedBleCentralManagerWillRestoreStateEvent,
   TransformedBleDiscoverPeripheralEvent,
   TransformedBleManagerDidUpdateValueForCharacteristicEvent,
 } from "./types";
-
+import { transformPeripheral } from "./helpers";
 
 const bleManager = NativeModules.BleManager;
 
@@ -28,47 +29,80 @@ type EventMap = {
   BleManagerDidUpdateValueForCharacteristic: TransformedBleManagerDidUpdateValueForCharacteristicEvent;
   BleManagerConnectPeripheral: BleConnectPeripheralEvent;
   BleManagerDisconnectPeripheral: BleDisconnectPeripheralEvent;
-  BleManagerPeripheralDidBond: BleBondedPeripheralEvent;
-  BleManagerCentralManagerWillRestoreState: BleManagerCentralManagerWillRestoreStateEvent;
+  BleManagerPeripheralDidBond: TransformedBleBondedPeripheralEvent;
+  BleManagerCentralManagerWillRestoreState: TransformedBleCentralManagerWillRestoreStateEvent;
   BleManagerDidUpdateNotificationStateFor: BleManagerDidUpdateNotificationStateForEvent;
 };
 
-function wrapDiscoveredPeripheral(listener: (data: TransformedBleDiscoverPeripheralEvent) => void) {
-  return function handleDicoveredPeripheral(this: unknown, ...args: [BleDiscoverPeripheralEvent]) {
-    const [data, ...restArgs] = args;
-    const { advertising } = data;
-    const { manufacturerData, serviceData, ...restAdvertizing } = advertising;
-    const transformedAdvertising: TransformedAdvertizingData = restAdvertizing;
-    if ('manufacturerData' in advertising) {
-      transformedAdvertising.manufacturerData = manufacturerData && Uint8Array.from(manufacturerData.bytes);
-    }
-    if ('serviceData' in advertising) {
-      transformedAdvertising.serviceData = serviceData && Uint8Array.from(serviceData.bytes);
-    }
-    const transformedData: TransformedBleDiscoverPeripheralEvent = {
-      ...data,
-      advertising: transformedAdvertising,
-    };
-    return listener.call(this, transformedData, ...restArgs);
-  }
+function wrapDiscoveredPeripheral(
+  listener: (data: TransformedBleDiscoverPeripheralEvent) => void
+) {
+  return function handleDicoveredPeripheral(
+    this: unknown,
+    ...args: [BleDiscoverPeripheralEvent]
+  ) {
+    const [peripheral, ...restArgs] = args;
+    return listener.call(this, transformPeripheral(peripheral), ...restArgs);
+  };
 }
 
-function wrapUpdateValueForCharacteristic(listener: (data: TransformedBleManagerDidUpdateValueForCharacteristicEvent) => void) {
-  return function handleUpdateValueForcharacteristic(this: unknown, ...args: [BleManagerDidUpdateValueForCharacteristicEvent]) {
+function wrapBondedPeripheral(
+  listener: (data: TransformedBleBondedPeripheralEvent) => void
+) {
+  return function handleDicoveredPeripheral(
+    this: unknown,
+    ...args: [BleBondedPeripheralEvent]
+  ) {
+    const [peripheral, ...restArgs] = args;
+    return listener.call(this, transformPeripheral(peripheral), ...restArgs);
+  };
+}
+
+function wrapUpdateValueForCharacteristic(
+  listener: (
+    data: TransformedBleManagerDidUpdateValueForCharacteristicEvent
+  ) => void
+) {
+  return function handleUpdateValueForcharacteristic(
+    this: unknown,
+    ...args: [BleManagerDidUpdateValueForCharacteristicEvent]
+  ) {
     const [data, ...restArgs] = args;
     const { value, ...restData } = data;
-    const transformedData: TransformedBleManagerDidUpdateValueForCharacteristicEvent = {
+    const transformedData: TransformedBleManagerDidUpdateValueForCharacteristicEvent =
+      {
+        ...restData,
+        value: Uint8Array.from(value),
+      };
+    return listener.call(this, transformedData, ...restArgs);
+  };
+}
+
+function wrapCentralManagerWillRestoreState(
+  listener: (data: TransformedBleCentralManagerWillRestoreStateEvent) => void
+) {
+  return function handleCentralManagerWillRestoreState(
+    this: unknown,
+    ...args: [BleManagerCentralManagerWillRestoreStateEvent]
+  ) {
+    const [data, ...restArgs] = args;
+    const { peripherals, ...restData } = data;
+    const transformedData: TransformedBleCentralManagerWillRestoreStateEvent = {
       ...restData,
-      value: Uint8Array.from(value),
+      peripherals: peripherals.map(transformPeripheral),
     };
     return listener.call(this, transformedData, ...restArgs);
-  }
+  };
 }
 
 type Events = keyof EventMap;
 
 type EventListenerArgs = {
-  [K in Events]: [eventType: K, listener: (arg: EventMap[K]) => void, context?: Object];
+  [K in Events]: [
+    eventType: K,
+    listener: (arg: EventMap[K]) => void,
+    context?: Object
+  ];
 }[Events];
 class BleNativeEventEmitter extends NativeEventEmitter {
   constructor() {
@@ -183,28 +217,41 @@ class BleNativeEventEmitter extends NativeEventEmitter {
     listener: (arg: EventMap[typeof eventType]) => void,
     context?: Object
   ): EmitterSubscription;
-  addListener(
-    ...args: EventListenerArgs
-  ): EmitterSubscription {
+  addListener(...args: EventListenerArgs): EmitterSubscription {
     switch (args[0]) {
-      case 'BleManagerStopScan':
+      case "BleManagerStopScan":
         return super.addListener(...args);
-      case 'BleManagerDidUpdateState':
+      case "BleManagerDidUpdateState":
         return super.addListener(...args);
-      case 'BleManagerDiscoverPeripheral': {
-        return super.addListener(args[0], wrapDiscoveredPeripheral(args[1]), ...args.slice(2));
-      }
-      case 'BleManagerDidUpdateValueForCharacteristic':
-        return super.addListener(args[0], wrapUpdateValueForCharacteristic(args[1]), ...args.slice(2));
-      case 'BleManagerConnectPeripheral':
+      case "BleManagerDiscoverPeripheral":
+        return super.addListener(
+          args[0],
+          wrapDiscoveredPeripheral(args[1]),
+          ...args.slice(2)
+        );
+      case "BleManagerDidUpdateValueForCharacteristic":
+        return super.addListener(
+          args[0],
+          wrapUpdateValueForCharacteristic(args[1]),
+          ...args.slice(2)
+        );
+      case "BleManagerConnectPeripheral":
         return super.addListener(...args);
-      case 'BleManagerDisconnectPeripheral':
+      case "BleManagerDisconnectPeripheral":
         return super.addListener(...args);
-      case 'BleManagerPeripheralDidBond':
-        return super.addListener(...args);
-      case 'BleManagerCentralManagerWillRestoreState':
-        return super.addListener(...args);
-      case 'BleManagerDidUpdateNotificationStateFor':
+      case "BleManagerPeripheralDidBond":
+        return super.addListener(
+          args[0],
+          wrapBondedPeripheral(args[1]),
+          ...args.slice(2)
+        );
+      case "BleManagerCentralManagerWillRestoreState":
+        return super.addListener(
+          args[0],
+          wrapCentralManagerWillRestoreState(args[1]),
+          ...args.slice(2)
+        );
+      case "BleManagerDidUpdateNotificationStateFor":
         return super.addListener(...args);
       default:
         throw new Error(`Unknown event type ${args[0]}`);
