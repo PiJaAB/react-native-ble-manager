@@ -42,8 +42,6 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import static it.innove.ErrorHelper;
-
 
 /**
  * Peripheral wraps the BluetoothDevice and provides methods to convert to JSON.
@@ -122,12 +120,12 @@ public class Peripheral extends BluetoothGattCallback {
         return ErrorHelper.makeCustomError(message, code, device, characteristic);
     }
 
-    private WritableMap makeError(String message, int code, BluetoothGattDescriptor descriptor) {
+    private WritableMap makeError(String message, BleErrorCode code, BluetoothGattDescriptor descriptor) {
         return ErrorHelper.makeCustomError(message, code, device, descriptor);
     }
 
     private WritableMap makeAttError(String message, int status) {
-        ErrorHelper.makeCustomError(message + ", status="+status, BleErrorCode.ATT_ERROR, device);
+        WritableMap map = ErrorHelper.makeCustomError(message + ", status="+status, BleErrorCode.ATT_ERROR, device);
         map.putInt(ErrorHelper.ATT_STATUS_KEY, status);
         return map;
     }
@@ -142,7 +140,7 @@ public class Peripheral extends BluetoothGattCallback {
 
     private WritableMap makeAttError(String message, int status, BluetoothGattCharacteristic characteristic) {
         if (characteristic == null) {
-            return this.makeAttError(message, code);
+            return this.makeAttError(message, status);
         }
         BluetoothGattService service = characteristic.getService();
         WritableMap map = this.makeAttError(message, status, service);
@@ -152,7 +150,7 @@ public class Peripheral extends BluetoothGattCallback {
 
     private WritableMap makeAttError(String message, int status, BluetoothGattDescriptor descriptor) {
         if (descriptor == null) {
-            return this.makeAttError(message, code);
+            return this.makeAttError(message, status);
         }
         BluetoothGattCharacteristic characteristic = descriptor.getCharacteristic();
         WritableMap map = this.makeAttError(message, status, characteristic);
@@ -197,7 +195,7 @@ public class Peripheral extends BluetoothGattCallback {
 
     public void disconnect(final Callback callback, final boolean force) {
         mainHandler.post(() -> {
-            WritableMap errorMap = makeError("Disconnect called before connect callback invoked", BleErrorCode.CONNECTION_ERROR)
+            WritableMap errorMap = makeError("Disconnect called before connect callback invoked", BleErrorCode.CONNECTION_ERROR);
             for (Callback connectCallback : connectCallbacks) {
                 connectCallback.invoke(errorMap);
             }
@@ -564,7 +562,7 @@ public class Peripheral extends BluetoothGattCallback {
                 writeCallbacks.clear();
             } else if (!writeCallbacks.isEmpty()) {
                 for (Callback writeCallback : writeCallbacks) {
-                    writeCallback.invoke(null);
+                    writeCallback.invoke((Object) null);
                 }
                 writeCallbacks.clear();
             }
@@ -578,7 +576,7 @@ public class Peripheral extends BluetoothGattCallback {
             if (!registerNotifyCallbacks.isEmpty()) {
                 if (status == BluetoothGatt.GATT_SUCCESS) {
                     for (Callback registerNotifyCallback : registerNotifyCallbacks) {
-                        registerNotifyCallback.invoke(null);
+                        registerNotifyCallback.invoke((Object) null);
                     }
                     Log.d(BleManager.LOG_TAG, "onDescriptorWrite success");
                 } else {
@@ -873,7 +871,7 @@ public class Peripheral extends BluetoothGattCallback {
                     | BluetoothGattDescriptor.PERMISSION_READ_ENCRYPTED
                     | BluetoothGattDescriptor.PERMISSION_READ_ENCRYPTED_MITM;
             if ((descriptor.getPermissions() & readPermissionBitMask) != 0) {
-                callback.invoke(makeAttError("Read descriptor failed for " + descriptorUUID + ": Descriptor is missing read permission", BluetoothGatt.READ_NOT_PERMITTED, descriptor), null);
+                callback.invoke(makeAttError("Read descriptor failed for " + descriptorUUID + ": Descriptor is missing read permission", BluetoothGatt.GATT_READ_NOT_PERMITTED, descriptor), null);
                 completedCommand();
                 return;
             }
@@ -965,7 +963,7 @@ public class Peripheral extends BluetoothGattCallback {
             } else {
                 readRSSICallbacks.addLast(callback);
                 if (!gatt.readRemoteRssi()) {
-                    WritableMap errorMap = makeError("Read RSSI failed", BleErrorCode.RSSI_READ_FAILED, descriptor);
+                    WritableMap errorMap = makeError("Read RSSI failed", BleErrorCode.RSSI_READ_FAILED);
                     for (Callback readRSSICallback : readRSSICallbacks) {
                         readRSSICallback.invoke(errorMap, null);
                     }
@@ -994,7 +992,7 @@ public class Peripheral extends BluetoothGattCallback {
                     callback.invoke(makeError("Could not refresh cache for device.", BleErrorCode.CACHE_REFRESH_FAILED), null);
                 }
             } catch (Exception localException) {
-                callback.invoke(makeCustomError(localException.getMessage(), BleErrorCode.UNKNOWN_EXCEPTION), null);
+                callback.invoke(makeError(localException.getMessage(), BleErrorCode.UNKNOWN_EXCEPTION), null);
             } finally {
                 completedCommand();
             }
@@ -1084,7 +1082,6 @@ public class Peripheral extends BluetoothGattCallback {
                 WritableMap errorMap = makeError("Characteristic " + characteristicUUID + " not found", BleErrorCode.CHARACTERISTIC_NOT_FOUND);
                 errorMap.putString(ErrorHelper.SERVICE_KEY, serviceUUID.toString());
                 errorMap.putString(ErrorHelper.CHARACTERISTIC_KEY, characteristicUUID.toString());
-                errorMap.putString(ErrorHelper.DESCRIPTOR_KEY, descriptorUUID.toString());
                 callback.invoke(errorMap);
                 completedCommand();
                 return;
@@ -1097,7 +1094,7 @@ public class Peripheral extends BluetoothGattCallback {
                     callback.invoke(makeError("Write failed", BleErrorCode.WRITE_FAILED, characteristic));
                 } else {
                     if (BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE == writeType) {
-                        callback.invoke(null);
+                        callback.invoke((Object) null);
                     }
                 }
             } else {
@@ -1145,7 +1142,7 @@ public class Peripheral extends BluetoothGattCallback {
                                 Thread.sleep(queueSleepTime);
                             }
                             if (!writeError) {
-                                callback.invoke(null);
+                                callback.invoke((Object) null);
                             }
                         }
                     } catch (InterruptedException e) {
