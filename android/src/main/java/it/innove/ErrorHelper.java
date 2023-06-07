@@ -1,9 +1,14 @@
 package it.innove;
 
-import android.util.Log;
+import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothGattCharacteristic;
+import android.bluetooth.BluetoothGattDescriptor;
+import android.bluetooth.BluetoothGattService;
 
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.WritableMap;
+
+import javax.annotation.Nullable;
 
 public class ErrorHelper {
     public static final String MESSAGE_KEY = "message";
@@ -15,7 +20,7 @@ public class ErrorHelper {
     public static final String CHARACTERISTIC_KEY = "characteristicUUID";
     public static final String DESCRIPTOR_KEY = "descriptorUUID";
 
-    public static WritableMap makeCustomError(String message, BleErrorCode code, BluetoothDevice device) {
+    public static WritableMap makeCustomError(String message, BleErrorCode code, @Nullable BluetoothDevice device) {
         WritableMap map = Arguments.createMap();
         map.putString(MESSAGE_KEY, message);
         map.putInt(CODE_KEY, code.getNumVal());
@@ -26,10 +31,10 @@ public class ErrorHelper {
     }
 
     public static WritableMap makeCustomError(String message, BleErrorCode code) {
-        return makeCustomError(message, code, null);
+        return makeCustomError(message, code, (BluetoothDevice) null);
     }
 
-    private WritableMap makeCustomError(String message, BleErrorCode code, BluetoothDevice device, BluetoothGattService service) {
+    public static WritableMap makeCustomError(String message, BleErrorCode code, @Nullable BluetoothDevice device, @Nullable BluetoothGattService service) {
         WritableMap map = makeCustomError(message, code, device);
         if (service != null) {
             map.putString(SERVICE_KEY, service.getUuid().toString());
@@ -37,35 +42,35 @@ public class ErrorHelper {
         return map;
     }
 
-    private WritableMap makeCustomError(String message, BleErrorCode code, BluetoothGattService service) {
+    public static WritableMap makeCustomError(String message, BleErrorCode code, @Nullable BluetoothGattService service) {
         return makeCustomError(message, code, null, service);
     }
 
-    private WritableMap makeCustomError(String message, BleErrorCode code, BluetoothDevice device, BluetoothGattCharacteristic characteristic) {
+    public static WritableMap makeCustomError(String message, BleErrorCode code, @Nullable BluetoothDevice device, @Nullable BluetoothGattCharacteristic characteristic) {
         if (characteristic == null) {
             return makeCustomError(message, code, device);
         }
         BluetoothGattService service = characteristic.getService();
         WritableMap map = makeCustomError(message, code, device, service);
-        errorMap.putString(CHARACTERISTIC_KEY characteristic.getUuid().toString());
+        map.putString(CHARACTERISTIC_KEY, characteristic.getUuid().toString());
         return map;
     }
 
-    private WritableMap makeCustomError(String message, BleErrorCode code, BluetoothGattCharacteristic characteristic) {
+    public static WritableMap makeCustomError(String message, BleErrorCode code, @Nullable BluetoothGattCharacteristic characteristic) {
         return makeCustomError(message, code, null, characteristic);
     }
 
-    private WritableMap makeCustomError(String message, BleErrorCode code, BluetoothDevice device, BluetoothGattDescriptor descriptor) {
+    public static WritableMap makeCustomError(String message, BleErrorCode code, @Nullable BluetoothDevice device, @Nullable BluetoothGattDescriptor descriptor) {
         if (descriptor == null) {
             return makeCustomError(message, code, device);
         }
         BluetoothGattCharacteristic characteristic = descriptor.getCharacteristic();
         WritableMap map = makeCustomError(message, code, device, characteristic);
-        errorMap.putString(DESCRIPTOR_KEY descriptor.getUuid().toString());
+        map.putString(DESCRIPTOR_KEY, descriptor.getUuid().toString());
         return map;
     }
 
-    private WritableMap makeCustomError(String message, BleErrorCode code, BluetoothGattDescriptor descriptor) {
+    public static WritableMap makeCustomError(String message, BleErrorCode code, @Nullable BluetoothGattDescriptor descriptor) {
         return makeCustomError(message, code, null, descriptor);
     }
 
