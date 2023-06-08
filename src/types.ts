@@ -207,11 +207,15 @@ export interface Descriptor {
   uuid: string;
 }
 
+export type CharacteristicsProperty = "Broadcast" | "Read" | "WriteWithoutResponse" | "Write" | "Notify" | "Indicate" | "AuthenticatedSignedWrites" | "ExtendedProperties" | "NotifyEncryptionRequired" | "IndicateEncryptionRequired"
+
 export interface Characteristic {
   /**
    * See https://developer.apple.com/documentation/corebluetooth/cbcharacteristicproperties
    */
-  properties: ("Broadcast" | "Read" | "WriteWithoutResponse" | "Write" | "Notify" | "Indicate" | "AuthenticatedSignedWrites" | "ExtendedProperties" | "NotifyEncryptionRequired" | "IndicateEncryptionRequired")[];
+  properties: {
+    [key in CharacteristicsProperty]?: CharacteristicsProperty;
+  };
   characteristic: string;
   service: string;
   descriptors?: Descriptor[];

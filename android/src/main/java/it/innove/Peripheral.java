@@ -275,7 +275,7 @@ public class Peripheral extends BluetoothGattCallback {
 					characteristicsMap.putArray("properties", Helper.decodeProperties(characteristic));
 
 					if (characteristic.getPermissions() > 0) {
-						characteristicsMap.putArray("permissions", Helper.decodePermissions(characteristic));
+						characteristicsMap.putMap("permissions", Helper.decodePermissions(characteristic));
 					}
 
                     WritableArray descriptorsArray = Arguments.createArray();
