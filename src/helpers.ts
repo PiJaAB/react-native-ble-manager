@@ -14,13 +14,11 @@ export function transformPeripheral<T extends RawPeripheral>(
     manufacturerData?: Uint8Array;
     serviceData?: Uint8Array;
   } = restAdvertizing as Omit<T["advertising"], "manufacturerData" | "serviceData">;
-  if ("manufacturerData" in advertising) {
-    transformedAdvertising.manufacturerData =
-      manufacturerData && Uint8Array.from(manufacturerData.bytes);
+  if ("manufacturerData" in advertising && advertising.manufacturerData?.bytes != null) {
+    transformedAdvertising.manufacturerData = Uint8Array.from(advertising.manufacturerData.bytes);
   }
-  if ("serviceData" in advertising) {
-    transformedAdvertising.serviceData =
-      serviceData && Uint8Array.from(serviceData.bytes);
+  if ("serviceData" in advertising && advertising.serviceData?.bytes != null) {
+    transformedAdvertising.serviceData = Uint8Array.from(advertising.serviceData.bytes);
   }
   return {
     ...peripheral,
