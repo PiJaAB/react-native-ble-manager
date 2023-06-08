@@ -1,6 +1,6 @@
 {
   "name": "@pija-ab/react-native-ble-manager",
-  "version": "10.1.0",
+  "version": "10.1.0-pija-beta.1",
   "description": "A BLE module for react native.",
   "repository": {
     "type": "git",
