@@ -1,8 +1,8 @@
 package it.innove;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static com.facebook.react.common.ReactConstants.TAG;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
@@ -46,6 +46,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 /**
  * Peripheral wraps the BluetoothDevice and provides methods to convert to JSON.
  */
+@SuppressLint("MissingPermission")
 public class Peripheral extends BluetoothGattCallback {
 
     private static final String CHARACTERISTIC_NOTIFICATION_CONFIG = "00002902-0000-1000-8000-00805f9b34fb";
@@ -158,7 +159,7 @@ public class Peripheral extends BluetoothGattCallback {
         return map;
     }
 
-    public void connect(final Callback callback, Activity activity) {
+    public void connect(final Callback callback, Activity activity, ReadableMap options) {
         mainHandler.post(() -> {
             if (!connected) {
                 BluetoothDevice device = getDevice();
@@ -166,7 +167,16 @@ public class Peripheral extends BluetoothGattCallback {
                 this.connecting = true;
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                     Log.d(BleManager.LOG_TAG, " Is Or Greater than M $mBluetoothDevice");
-                    gatt = device.connectGatt(activity, false, this, BluetoothDevice.TRANSPORT_LE);
+                    boolean autoconnect = false;
+                    if (options.hasKey("autoconnect")) {
+                        autoconnect = options.getBoolean("autoconnect");
+                    }
+                    if (!autoconnect && options.hasKey("phy")) {
+                        int phy = options.getInt("phy");
+                        gatt = device.connectGatt(activity, false, this, BluetoothDevice.TRANSPORT_LE, phy);
+                    } else {
+                        gatt = device.connectGatt(activity, autoconnect, this, BluetoothDevice.TRANSPORT_LE);
+                    }
                 } else {
                     Log.d(BleManager.LOG_TAG, " Less than M");
                     try {
@@ -1158,14 +1168,8 @@ public class Peripheral extends BluetoothGattCallback {
     public void requestConnectionPriority(int connectionPriority, Callback callback) {
         enqueue(() -> {
             if (gatt != null) {
-                if (Build.VERSION.SDK_INT >= LOLLIPOP) {
-                    boolean status = gatt.requestConnectionPriority(connectionPriority);
-                    callback.invoke(null, status);
-                } else {
-                    WritableMap errorMap = makeError("Requesting connection priority requires at least API level " + LOLLIPOP, BleErrorCode.INVALID_API_VERSION);
-                    errorMap.putInt("minAdkVersion", LOLLIPOP);
-                    callback.invoke(errorMap, null);
-                }
+                boolean status = gatt.requestConnectionPriority(connectionPriority);
+                callback.invoke(null, status);
             } else {
                 callback.invoke(makeError("BluetoothGatt is null", BleErrorCode.GATT_IS_NULL), null);
             }
@@ -1188,19 +1192,13 @@ public class Peripheral extends BluetoothGattCallback {
                 return;
             }
 
-            if (Build.VERSION.SDK_INT >= LOLLIPOP) {
-                requestMTUCallbacks.addLast(callback);
-                if (!gatt.requestMtu(mtu)) {
-                    for (Callback requestMTUCallback : requestMTUCallbacks) {
-                        requestMTUCallback.invoke(makeError("Request MTU failed", BleErrorCode.REQUEST_MTU_FAILED), null);
-                    }
-                    requestMTUCallbacks.clear();
-                    completedCommand();
+            requestMTUCallbacks.addLast(callback);
+            if (!gatt.requestMtu(mtu)) {
+                WritableMap errorMap = makeError("Request MTU failed", BleErrorCode.REQUEST_MTU_FAILED), null);
+                for (Callback requestMTUCallback : requestMTUCallbacks) {
+                    requestMTUCallback.invoke(errorMap, null);
                 }
-            } else {
-                WritableMap errorMap = makeError("Requesting MTU requires at least API level " + LOLLIPOP, BleErrorCode.INVALID_API_VERSION);
-                errorMap.putInt("minAdkVersion", LOLLIPOP);
-                callback.invoke(errorMap, null);
+                requestMTUCallbacks.clear();
                 completedCommand();
             }
         });

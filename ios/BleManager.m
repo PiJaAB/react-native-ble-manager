@@ -532,7 +532,7 @@ RCT_EXPORT_METHOD(stopScan:(nonnull RCTResponseSenderBlock)callback)
     }
 }
 
-RCT_EXPORT_METHOD(connect:(NSString *)peripheralUUID callback:(nonnull RCTResponseSenderBlock)callback)
+RCT_EXPORT_METHOD(connect:(NSString *)peripheralUUID options:(NSDictionary *)options callback:(nonnull RCTResponseSenderBlock)callback)
 {
     NSLog(@"Connect");
     CBPeripheral *peripheral = [self findPeripheralByUUID:peripheralUUID];
@@ -734,6 +734,39 @@ RCT_EXPORT_METHOD(read:(NSString *)deviceUUID serviceUUID:(NSString*)serviceUUID
     }
     
 }
+
+RCT_EXPORT_METHOD(getMaximumWriteValueLengthForWithResponse:(NSString *)deviceUUID callback:(nonnull RCTResponseSenderBlock)callback)
+{
+    NSLog(@"getMaximumWriteValueLengthForWithResponse");
+    
+    CBPeripheral *peripheral = [self findPeripheralByUUID:deviceUUID];
+    
+    if (peripheral && peripheral.state == CBPeripheralStateConnected) {
+        [self insertCallback:callback intoDictionary:readRSSICallbacks withKey:[peripheral uuidAsString]];
+        NSNumber *max = [NSNumber numberWithInteger:[peripheral maximumWriteValueLengthForType:(CBCharacteristicWriteWithResponse)]];
+        callback(@[[NSNull null], max]);
+    } else {
+        callback(@[@"Peripheral not found or not connected"]);
+    }
+    
+}
+
+RCT_EXPORT_METHOD(getMaximumWriteValueLengthForWithoutResponse:(NSString *)deviceUUID callback:(nonnull RCTResponseSenderBlock)callback)
+{
+    NSLog(@"getMaximumWriteValueLengthForWithoutResponse");
+    
+    CBPeripheral *peripheral = [self findPeripheralByUUID:deviceUUID];
+    
+    if (peripheral && peripheral.state == CBPeripheralStateConnected) {
+        [self insertCallback:callback intoDictionary:readRSSICallbacks withKey:[peripheral uuidAsString]];
+        NSNumber *max = [NSNumber numberWithInteger:[peripheral maximumWriteValueLengthForType:(CBCharacteristicPropertyWriteWithoutResponse)]];
+        callback(@[[NSNull null], max]);
+    } else {
+        callback(@[@"Peripheral not found or not connected"]);
+    }
+    
+}
+
 
 RCT_EXPORT_METHOD(readRSSI:(NSString *)deviceUUID callback:(nonnull RCTResponseSenderBlock)callback)
 {
