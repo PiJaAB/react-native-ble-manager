@@ -111,7 +111,7 @@ static bool hasListeners = NO;
                 descriptor.UUID,
                 descriptor.characteristic.UUID,
                 error);
-        NSDictionary *baseDict = @{ @"peripheralUUID": [peripheral.identifier UUIDString], @"serviceUUID": [characteristic.service.UUID UUIDString], @"characteristicUUID": [characteristic.UUID UUIDString], @"peripheral": @{ @"identifier": [peripheral.identifier UUIDString], @"name": [peripheral name], @"state": [self periphalStateToString:peripheral.state] } };
+        NSDictionary *baseDict = @{ @"peripheralUUID": [peripheral.identifier UUIDString], @"serviceUUID": [descriptor.characteristic.service.UUID UUIDString], @"characteristicUUID": [descriptor.characteristic.UUID UUIDString], @"peripheral": @{ @"identifier": [peripheral.identifier UUIDString], @"name": [peripheral name], @"state": [self periphalStateToString:peripheral.state] } };
         NSDictionary *errorDict = [self iOSErrorAsDict:error dict:baseDict];
         [self invokeAndClearDictionary:readDescriptorCallbacks withKey:key usingParameters:@[errorDict, [NSNull null]]];
         return;
@@ -168,7 +168,7 @@ static bool hasListeners = NO;
                 [self invokeAndClearDictionary:notificationCallbacks withKey:key usingParameters:@[errorDict]];
             } else {
                 NSLog(@"Notification began on %@", characteristic.UUID);
-                [self invokeAndClearDictionary:notificationCallbacks withKey:key usingParameters:@[NSNull null]];
+                [self invokeAndClearDictionary:notificationCallbacks withKey:key usingParameters:@[[NSNull null]]];
             }
         }
     } else {
@@ -181,7 +181,7 @@ static bool hasListeners = NO;
                 [self invokeAndClearDictionary:stopNotificationCallbacks withKey:key usingParameters:@[errorDict]];
             } else {
                 NSLog(@"Notification ended on %@", characteristic.UUID);
-                [self invokeAndClearDictionary:stopNotificationCallbacks withKey:key usingParameters:@[NSNull null]];
+                [self invokeAndClearDictionary:stopNotificationCallbacks withKey:key usingParameters:@[[NSNull null]]];
             }
         }
     }
@@ -602,7 +602,7 @@ RCT_EXPORT_METHOD(checkState:(nonnull RCTResponseSenderBlock)callback)
     if (manager != nil){
         [self centralManagerDidUpdateState:self.manager];
 
-        NSString *stateName = [self centralManagerStateToString:self.manager.state];
+        NSString *stateName = [self managerStateToString:self.manager.state];
         callback(@[stateName]);
     }
 }
@@ -915,12 +915,6 @@ RCT_EXPORT_METHOD(refreshCache:(NSString *)deviceUUID devicePin:(NSString *)devi
     callback(@[errorDict]);
 }
 
-RCT_EXPORT_METHOD(refreshCache:(NSString *)deviceUUID devicePin:(NSString *)devicePin callback:(nonnull RCTResponseSenderBlock)callback)
-{
-    NSDictionary *errorDict = [self customError:@"Not supported" code:BleErrorCodeNotSupported];
-    callback(@[errorDict]);
-}
-
 RCT_EXPORT_METHOD(removeBond:(NSString *)deviceUUID callback:(nonnull RCTResponseSenderBlock)callback)
 {
     NSDictionary *errorDict = [self customError:@"Not supported" code:BleErrorCodeNotSupported];
@@ -953,7 +947,7 @@ RCT_EXPORT_METHOD(requestMTU:(NSString *)deviceUUID mtu:(NSInteger)mtu callback:
             [self invokeAndClearDictionary:writeCallbacks withKey:key usingParameters:@[errorDict]];
         } else {
             if ([writeQueue count] == 0) {
-                [self invokeAndClearDictionary:writeCallbacks withKey:key usingParameters:@[NSNull null]];
+                [self invokeAndClearDictionary:writeCallbacks withKey:key usingParameters:@[[NSNull null]]];
             }else{
                 // Remove and write the queud message
                 NSData *message = [writeQueue objectAtIndex:0];
