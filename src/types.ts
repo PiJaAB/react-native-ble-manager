@@ -32,7 +32,7 @@ export interface RawPeripheral {
   id: string;
   rssi: number;
   name?: string;
-  advertising: RawAdvertisingData;
+  advertising?: RawAdvertisingData;
 }
 
 export interface RawAdvertisingData {

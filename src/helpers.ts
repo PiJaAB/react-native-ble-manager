@@ -8,7 +8,7 @@ export function transformPeripheral<T extends RawPeripheral>(
     serviceData?: Uint8Array;
   };
 } {
-  const { advertising } = peripheral;
+  const { advertising = {}} = peripheral;
   const { manufacturerData, serviceData, ...restAdvertizing } = advertising;
   const transformedAdvertising: Omit<T["advertising"], "manufacturerData" | "serviceData"> & {
     manufacturerData?: Uint8Array;

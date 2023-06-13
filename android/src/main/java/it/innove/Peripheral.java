@@ -282,7 +282,7 @@ public class Peripheral extends BluetoothGattCallback {
                     characteristicsMap.putString("service", UUIDHelper.uuidToString(service.getUuid()));
                     characteristicsMap.putString("characteristic", UUIDHelper.uuidToString(characteristic.getUuid()));
 
-					characteristicsMap.putArray("properties", Helper.decodeProperties(characteristic));
+					characteristicsMap.putMap("properties", Helper.decodeProperties(characteristic));
 
 					if (characteristic.getPermissions() > 0) {
 						characteristicsMap.putMap("permissions", Helper.decodePermissions(characteristic));
@@ -301,7 +301,7 @@ public class Peripheral extends BluetoothGattCallback {
                         }
 
 						if (descriptor.getPermissions() > 0) {
-							descriptorMap.putArray("permissions", Helper.decodePermissions(descriptor));
+							descriptorMap.putMap("permissions", Helper.decodePermissions(descriptor));
 						}
 						descriptorsArray.pushMap(descriptorMap);
 					}
@@ -1194,7 +1194,7 @@ public class Peripheral extends BluetoothGattCallback {
 
             requestMTUCallbacks.addLast(callback);
             if (!gatt.requestMtu(mtu)) {
-                WritableMap errorMap = makeError("Request MTU failed", BleErrorCode.REQUEST_MTU_FAILED), null);
+                WritableMap errorMap = makeError("Request MTU failed", BleErrorCode.REQUEST_MTU_FAILED);
                 for (Callback requestMTUCallback : requestMTUCallbacks) {
                     requestMTUCallback.invoke(errorMap, null);
                 }
