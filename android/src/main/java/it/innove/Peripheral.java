@@ -1194,8 +1194,9 @@ public class Peripheral extends BluetoothGattCallback {
 
             requestMTUCallbacks.addLast(callback);
             if (!gatt.requestMtu(mtu)) {
+                WritableMap errorMap = makeError("Request MTU failed", BleErrorCode.REQUEST_MTU_FAILED);
                 for (Callback requestMTUCallback : requestMTUCallbacks) {
-                    requestMTUCallback.invoke(makeError("Request MTU failed", BleErrorCode.REQUEST_MTU_FAILED), null);
+                    requestMTUCallback.invoke(errorMap, null);
                 }
                 requestMTUCallbacks.clear();
                 completedCommand();
