@@ -117,6 +117,46 @@ function isValidError(o: Record<string, unknown>): o is {
   );
 }
 
+function patchMessage(err: BleError): string {
+  const keyVals: [string, string | number][] = [];
+  if (err.iosCode != null) {
+    keyVals.push(['iosCode', err.iosCode.code]);
+    keyVals.push(['iosDomain', err.iosCode.domain]);
+  }
+  if (err.attCode != null) {
+    keyVals.push(['attCode', err.attCode]);
+  }
+  if (err.minAdkVersion != null) {
+    keyVals.push(['minAdkVersion', err.minAdkVersion]);
+  }
+  if (err.code != null) {
+    keyVals.push(['customCode', err.code]);
+  }
+  if (err.peripheralUUID != null) {
+    keyVals.push(['peripheralUUID', err.peripheralUUID]);
+  }
+  if (err.serviceUUID != null) {
+    keyVals.push(['serviceUUID', err.serviceUUID]);
+  }
+  if (err.characteristicUUID != null) {
+    keyVals.push(['characteristicUUID', err.characteristicUUID]);
+  }
+  if (err.descriptorUUID != null) {
+    keyVals.push(['descriptorUUID', err.descriptorUUID]);
+  }
+  if (keyVals.length === 0) {
+    return err.message;
+  }
+  if (err.message === '' || err.message.endsWith(' ')) {
+    return `${err.message}[${keyVals
+      .map(([key, val]) => `${key}=${val}`)
+      .join(', ')}]`;
+  }
+  return `${err.message} [${keyVals
+    .map(([key, val]) => `${key}=${val}`)
+    .join(', ')}]`;
+}
+
 export default class BleError extends Error {
   raw: unknown;
   iosCode: {
@@ -198,6 +238,7 @@ export default class BleError extends Error {
       this.characteristicUUID = characteristicUUID ?? null;
       this.descriptorUUID = descriptorUUID ?? null;
     }
+    this.message = patchMessage(this);
   }
 }
 BleError.prototype.name = BleError.name;
