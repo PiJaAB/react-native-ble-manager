@@ -36,3 +36,5 @@ DerivedData
 xcuserdata
 *.iml
 *.swp
+
+.yarn/cache/
